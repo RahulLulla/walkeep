@@ -8,19 +8,19 @@ Here a Real-Time transactional outbox worker is built on top of WalKeep pipeline
 
 Leveraging Rust's memory safety without GC, strict concurrency and predictable performance
 
-Blueprint:
+**Blueprint:**
 
 - PostgreSQL -> WalKeep Engine/Rust application parsing bytes safely (Passing Binary Stream)
 - WalKeep Engine -> PostgreSQL (Keep Alive)
 - WalKeep Engine -> ASYNC TOKIO EVENT LOOP/Distributes raw events to disk/network (Concurrent Zero-Copy Arc)
 
-WalKeep Engine (Rust)
+**WalKeep Engine**
 
 - Parse Binary Stream -> Filter for 'outbox_events' mutations
 - Deserialize Tuple Payload -> Map to Event Struct
 - Publish to Kafka/Redpanda Asynchronously
 
-Components:
+**Components:**
 
 - tokio: performing asynchronous activity such handshake with postgres, send `START_REPLICATION` to postgres
 - nom: parse the binary data sent by postgres into rust structs
@@ -87,15 +87,18 @@ topic=
 ```
 
 4. Setup Apache Kafka, Create topic that would be configured in config.ini
+
    Refer to [link](https://kafka.apache.org/43/getting-started/quickstart/)
    Ex:
 
-```
+```BAT
 a. Start Server
 # Generate a Cluster UUID
 .\bin\windows\kafka-storage.bat random-uuid
+
 # Format Log Directories
 .\bin\windows\kafka-storage.bat format --standalone -t <KAFKA_CLUSTER_ID> .\config\server.properties
+
 # Start Server
 .\bin\windows\kafka-server-start.bat .\config\server.properties
 
@@ -107,7 +110,9 @@ c. Start Consumer
 
 ```
 
-5. Perform insert and check the consumer the data should get streamed from DB -> WAL -> WALKeepEngine -> Kafka
+5. Start the Walkeep or use main.exe
+
+   Perform insert and check the consumer the data should get streamed from DB -> WAL -> WALKeepEngine -> Kafka
 
 ```SQL
 INSERT INTO public.outbox_events (id, aggregate_type, aggregate_id, event_type, payload, created_at) VALUES(gen_random_uuid(), 'SUM', '1', 'MATH', '{"name":"Sum was performed"}', now());
