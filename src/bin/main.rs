@@ -1,26 +1,42 @@
-use pgwire_replication::ReplicationClient;
-
 extern crate walkeep;
-use walkeep::event_handlers;
+use std::sync::Arc;
+
+use pgwire_replication::ReplicationConfig;
+use walkeep::outbox_kafka_sink::OutboxKafkaSink;
+use walkeep::read_kafka_config;
+use walkeep::read_kafka_config::KafkaConfig;
 use walkeep::read_repl_config;
+use walkeep::walkeep_engine::WalKeepEngine;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Initializing WalKeep Pipeline...");
 
-    let config = match read_repl_config::read_config() {
+    let config: ReplicationConfig = match read_repl_config::read_config() {
         Ok(cfg) => cfg,
         Err(err) => {
             eprintln!("Error: {}", err);
             std::process::exit(1);
         }
     };
-    let mut client: ReplicationClient = ReplicationClient::connect(config).await?;
 
-    println!("Handshake verified. Awaiting streaming binary transactions...");
+    let kakfa_config: KafkaConfig = match read_kafka_config::read_config() {
+        Ok(cfg) => cfg,
+        Err(err) => {
+            eprintln!("Error: {}", err);
+            std::process::exit(1);
+        }
+    };
 
-    while let Some(event) = client.recv().await? {
-        event_handlers::handle_replication_event(event, &client);
+    let sink: Arc<OutboxKafkaSink> = Arc::new(OutboxKafkaSink::new(
+        &kakfa_config.broker,
+        &kakfa_config.topic,
+    ));
+
+    let engine = WalKeepEngine::new(config, sink);
+
+    if let Err(err) = engine.start_pipeline().await {
+        eprint!("[WALKEEP ENGINE FATAL ERROR]: {}", err);
     }
 
     Ok(())

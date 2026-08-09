@@ -12,7 +12,7 @@ pub fn read_config() -> Result<ReplicationConfig, Box<dyn std::error::Error>> {
         .or(Err(ReadConfigError::FileMissing))?;
 
     let load_config = |name| -> Result<String, ReadConfigError> {
-        match config.get("DEFAULT", name) {
+        match config.get("DB_CONFIG", name) {
             Some(data) => Ok(data),
             None => Err(ReadConfigError::MissingField(name)),
         }

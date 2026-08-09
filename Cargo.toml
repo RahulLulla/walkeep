@@ -4,10 +4,21 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+# For Async runtime
 tokio = { version = "1.0", features = ["full"] } 
+# For Postgres Connection
 pgwire-replication = "0.3" 
+# For Json Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+# For working with bytes
 bytes = "1.0"
+# For reading config from .ini files
 configparser = "3.2.0"
+# For Error Handling
 thiserror = "2.0.19"
+# For Async Kafka Producer
+rdkafka = { version = "0.37", features = ["cmake-build", "tokio"]  }
+
+async-trait="0.1"
+cmake = "0.1.58"
