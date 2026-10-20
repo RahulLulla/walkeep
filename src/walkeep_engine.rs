@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use pgwire_replication::{ReplicationClient, ReplicationConfig, ReplicationEvent};
 
-use crate::walkeep_utils::{EventSink, RawWalFrame};
+use crate::{event_sink::EventSink, walkeep_utils::RawWalFrame};
 
 pub struct WalKeepEngine {
     config: ReplicationConfig,
@@ -29,7 +29,7 @@ impl WalKeepEngine {
                         lsn: wal_end.into(),
                         data,
                     };
-                    
+
                     self.sink.handle_event(frame).await?;
                     client.update_applied_lsn(wal_end);
                 }
